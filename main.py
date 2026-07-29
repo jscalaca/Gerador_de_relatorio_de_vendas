@@ -1,70 +1,93 @@
 import json
+from collections import defaultdict
 with open("vendas.json","r",encoding="utf-8") as arquivo:
     dados_vendas=json.load(arquivo)
-pedido_por_status={}
-faturamento_total=0
-unidades_vendidas=0
-total_por_categoria={}
-pedidos_por_regiao={}
-faturamento_por_regiao={}
 total_pedidos=len(dados_vendas)
+faturamento_total=0
+produtos_vendidos=0
+pedidos_validos=0
+pedido_por_status=defaultdict(int)
+unidades_por_categorias=defaultdict(int)
+total_por_categoria=defaultdict(int)
+cliente_compras=defaultdict(int)
+cliente_gastos=defaultdict(int)
+unidades_produtos=defaultdict(int)
+total_por_regiao=defaultdict(int)
 for item in dados_vendas:
- id_venda=item['id_pedido']
- data=item['data']
- cliente=item['cliente']
- cidade=item['cidade']
- regiao=item['regiao']
- produto=item['produto']
- categoria=item['categoria']
- unidades=item['quantidade']
- valor=item['valor_unitario']
- status=item['status']
- if status != "Cancelado":
-   preco=unidades*valor
-   faturamento_total+=preco
-   unidades_vendidas+=unidades
- if status not in pedido_por_status:
-     pedido_por_status[status]=0
- pedido_por_status[status]+=1
- if status != "Cancelado":
-  preco=unidades*valor
-  if categoria not in total_por_categoria:
-     total_por_categoria[categoria]=0
-  total_por_categoria[categoria]+=preco
-  if regiao not in pedidos_por_regiao:
-     pedidos_por_regiao[regiao]=0
-  pedidos_por_regiao[regiao]+=1
-  if regiao not in faturamento_por_regiao:
-     faturamento_por_regiao[regiao]=0
-  faturamento_por_regiao[regiao]+=preco
-print('===='*2,'RELATORIO VENDAS','===='*2)
-print(f'Total de Pedidos: {total_pedidos} pedidos')
-print('==='*10)
-print(f'Faturamento Total: {faturamento_total} R$')
-print('==='*10)
-print(f'Total de Produtos Vendidos: {unidades_vendidas} unidades')
-print('==='*10)
-print('Pedido Por Status')
+ if item['status'] in("Entregue","Em transporte"):
+    valor=item['quantidade']*item['valor_unitario']
+    faturamento_total+=valor
+    produtos_vendidos+=item['quantidade']
+    total_por_categoria[item['categoria']]+=valor
+    unidades_por_categorias[item['categoria']]+=item['quantidade']
+    cliente_compras[item['cliente']]+=item['quantidade']
+    cliente_gastos[item['cliente']]+=valor
+    total_por_regiao[item['regiao']]+=valor
+    unidades_produtos[item['produto']]+=item['quantidade']
+    pedidos_validos+=1
+ pedido_por_status[item['status']]+=1
+# calculando o ticket medio
+ticket_medio=faturamento_total/pedidos_validos
+# pegando o(s) cliente(s) que mais comprou
+compras=[]
+top_compras=max(cliente_compras.values())
+for item in cliente_compras.items():
+   if item[1]==top_compras:
+      compras.append(item)
+# pegando o(s) cliente(s) que mais gastou 
+gastos=[]
+top_gastos=max(cliente_gastos.values())
+for item in cliente_gastos.items():
+   if item[1]==top_gastos:
+      gastos.append(item)
+# pegando o produto mais vendido
+mais_vendidos=[]
+top_produto=max(unidades_produtos.values())
+for item in unidades_produtos.items():
+   if item[1]==top_produto:
+      mais_vendidos.append(item)
+    # organizando o print
+print('==='*3,'RELATÓRIO VENDAS','==='*3)
 print('---'*10)
-for info in pedido_por_status.items():
-   print(f'{info[0]}: {info[1]} pedidos')
-print('==='*10)
-print('Faturamento por Categoria')
+print(f'Total de pedidos: {total_pedidos}')
+print(f'Pedidos válidos: {pedidos_validos}')
 print('---'*10)
+print(f'Faturamento total: {faturamento_total} R$')
+print(f'Produtos vendidos: {produtos_vendidos} unidades')
+print('---'*10)
+print('Pedidos por status:')
+for dic in pedido_por_status.items():
+   print(f'-{dic[0]}: {dic[1]}')
+print('---'*10)
+print('Quantidade por categoria:')
+for info in unidades_por_categorias.items():
+   print(f'-{info[0]}: {info[1]}')
+print('---'*10)
+print('Faturamento por categoria:')
 for item in total_por_categoria.items():
-   print(f'{item[0]}: {item[1]} R$')
-print('==='*10)
-print('Pedidos por Região')
+   print(f'-{item[0]}: {item[1]} R$')
 print('---'*10)
-for dic in pedidos_por_regiao.items():
-   print(f'{dic[0]}: {dic[1]} Pedidos')
-print('==='*10)
-print('Faturamento por Região')
+print('Cliente(s) que mais comprou(aram)')
+for item in compras:
+   print(f'-{item[0]}: {item[1]} unidades')
 print('---'*10)
-for info in faturamento_por_regiao.items():
-   print(f'{info[0]}: {info[1]} R$')
+print('Cliente(s) que mais gastou(aram)')
+for item in gastos:
+   print(f'-{item[0]}: {item[1]} R$')
+print('---'*10)
+print('Quantidade por produto:')
+for item in unidades_produtos.items():
+   print(f'-{item[0]}: {item[1]}')
+print('---'*10)
+print('Faturamento por região:')
+for info in total_por_regiao.items():
+   print(f'-{info[0]}: {info[1]} R$')
+print('---'*10)
+print('Produto(s) mais vendido(s)')
+for prod in mais_vendidos:
+   print(f'-{prod[0]} {prod[1]} unidades')
+print('---'*10)
+print('Ticket Medio:')
+print(f'{ticket_medio:.2f} R$')
 print('==='*15)
-
-
-
 
