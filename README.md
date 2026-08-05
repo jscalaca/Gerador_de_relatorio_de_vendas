@@ -19,7 +19,7 @@ Importa e lê imformações diretamente do arquivo JSON
 - Ticket médio
 - Pedidos por Status
 - Total de Produtos Vendidos
-- Quantiade por categoria
+- Quantidade por categoria
 - Faturamento por Categoria
 - Quantidade por produto
 - Produto(s) mais vendido(s)
@@ -31,3 +31,13 @@ Importa e lê imformações diretamente do arquivo JSON
 
 Pedidos com status "Cancelado" não entram na contagem do faturamento total nem na contagem de total produtos vendidos
 Pedidos com status "Entregue" e "Em transporte" entram na contagem de faturamento total e entram na contagem de total de produtos vendidos
+
+# Atualizações 
+
+ Adição de docstrings
+
+Refatorção com funções 
+
+Separação da lógica de cad função específica
+
+Os resultados da versão anterior foram mantidos,com código mais organizado e de fácil manutencão
